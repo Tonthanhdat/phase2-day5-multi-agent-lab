@@ -19,4 +19,23 @@ class SupervisorAgent(BaseAgent):
         - Enforce max iterations and failure fallback.
         """
 
-        raise StudentTodoError("TODO(student): implement SupervisorAgent.run")
+        import os
+        from multi_agent_research_lab.services.llm_client import LLMClient
+
+        max_iter = int(os.getenv("MAX_ITERATIONS", "6"))
+        if state.iteration >= max_iter:
+            state.record_route("done")
+            return state
+
+        # Use deterministic routing for 1.5B model instead of LLM inference
+        if not state.research_notes:
+            next_route = "researcher"
+        elif not state.analysis_notes:
+            next_route = "analyst"
+        elif not state.final_answer:
+            next_route = "writer"
+        else:
+            next_route = "done"
+
+        state.record_route(next_route)
+        return state

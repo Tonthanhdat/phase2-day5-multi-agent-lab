@@ -16,4 +16,26 @@ class WriterAgent(BaseAgent):
         TODO(student): Synthesize a clear response with citations or source references.
         """
 
-        raise StudentTodoError("TODO(student): implement WriterAgent.run")
+        from multi_agent_research_lab.services.llm_client import LLMClient
+        from multi_agent_research_lab.core.schemas import AgentResult, AgentName
+
+        system_prompt = "You are a Writer Agent. Write a final comprehensive response based on the research notes and analysis notes. Include citations."
+        user_prompt = f"""
+        Query: {state.request.query}
+        Audience: {state.request.audience}
+        Research Notes: {state.research_notes}
+        Analysis Notes: {state.analysis_notes}
+
+        Please generate the final answer.
+        """
+
+        llm = LLMClient()
+        response = llm.complete(system_prompt, user_prompt)
+        state.final_answer = response.content
+
+        state.agent_results.append(AgentResult(
+            agent=AgentName.WRITER,
+            content=state.final_answer
+        ))
+
+        return state

@@ -23,3 +23,5 @@ def trace_span(name: str, attributes: dict[str, Any] | None = None) -> Iterator[
         yield span
     finally:
         span["duration_seconds"] = perf_counter() - started
+        # Print trace in local debug mode
+        # print(f"[TRACE] {name} took {span['duration_seconds']:.2f}s")

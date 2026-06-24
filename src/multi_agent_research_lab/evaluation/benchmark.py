@@ -15,9 +15,24 @@ def run_benchmark(run_name: str, query: str, runner: Runner) -> tuple[ResearchSt
 
     TODO(student): Add quality scoring, estimated token cost, citation coverage, and error rate.
     """
+    from multi_agent_research_lab.services.llm_client import LLMClient
+    
+    # Reset token counter
+    LLMClient.total_tokens_used = 0
 
     started = perf_counter()
     state = runner(query)
     latency = perf_counter() - started
-    metrics = BenchmarkMetrics(run_name=run_name, latency_seconds=latency)
+    
+    # Calculate quality score based on basic heuristics for demonstration
+    final_answer = state.final_answer or ""
+    quality = min(10.0, len(final_answer.split()) / 50.0) # 10 if > 500 words
+    
+    metrics = BenchmarkMetrics(
+        run_name=run_name, 
+        latency_seconds=latency,
+        total_tokens=LLMClient.total_tokens_used,
+        quality_score=quality,
+        notes=f"Sources: {len(state.sources)}, Iters: {state.iteration}"
+    )
     return state, metrics

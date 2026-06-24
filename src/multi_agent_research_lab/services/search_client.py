@@ -13,4 +13,18 @@ class SearchClient:
         TODO(student): Implement with Tavily, Bing, SerpAPI, internal docs, or a local mock.
         """
 
-        raise StudentTodoError("TODO(student): implement SearchClient.search")
+        from duckduckgo_search import DDGS
+
+        try:
+            results = []
+            with DDGS() as ddgs:
+                for r in ddgs.text(query, max_results=max_results):
+                    results.append(SourceDocument(
+                        url=r.get("href", ""),
+                        title=r.get("title", ""),
+                        snippet=r.get("body", ""),
+                    ))
+            return results
+        except Exception as e:
+            print(f"Search failed: {e}")
+            return []

@@ -16,4 +16,21 @@ class CriticAgent(BaseAgent):
         TODO(student): Add fact-check, citation coverage, or hallucination checks.
         """
 
-        raise StudentTodoError("TODO(student): implement CriticAgent.run")
+        from multi_agent_research_lab.services.llm_client import LLMClient
+        from multi_agent_research_lab.core.schemas import AgentResult, AgentName
+
+        if not state.final_answer:
+            return state
+
+        system_prompt = "You are a Critic Agent. Review the final answer against the research notes. Reply with 'PASS' if valid, or point out hallucinations."
+        user_prompt = f"Notes: {state.research_notes}\n\nFinal Answer: {state.final_answer}"
+
+        llm = LLMClient()
+        response = llm.complete(system_prompt, user_prompt)
+        
+        state.agent_results.append(AgentResult(
+            agent=AgentName.CRITIC,
+            content=response.content
+        ))
+
+        return state
